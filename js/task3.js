@@ -1,34 +1,36 @@
-const randomIntegerFromInterval = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1) + min);
+const refs = {
+  btncreatePromise: document.querySelector(".form"),
 };
 
-const makeTransaction = (transaction) => {
+const makeTransaction = (e) => {
+  e.preventDefault();
+  const { delay, step, amount } = e.currentTarget;
+  let sumDelay = Number.parseInt(delay.value);
+  for (let i = 1; i <= amount.value; i += 1) {
+    createPromise(i, sumDelay).then(logSuccess).catch(logError);
+    sumDelay += Number.parseInt(step.value);
+  }
+};
+
+const logSuccess = ({ position, delay }) => {
+  Notiflix.Notify.Success(`Fulfilled promise ${position} in ${delay}ms`);
+};
+
+const logError = ({ position, delay }) => {
+  Notiflix.Notify.Failure(`Rejected promise ${position} in ${delay}ms`);
+};
+
+function createPromise(position, delay) {
   return new Promise((resolve, reject) => {
-    const delay = randomIntegerFromInterval(200, 500);
-    const { id } = transaction;
     setTimeout(() => {
       const canProcess = Math.random() > 0.3;
       if (canProcess) {
-        resolve({ id, time: delay });
+        resolve({ position, delay });
       } else {
-        reject(id);
+        reject({ position, delay });
       }
     }, delay);
   });
-};
+}
 
-const logSuccess = ({ id, time }) => {
-  console.log(`Transaction ${id} processed in ${time}ms`);
-};
-
-const logError = (id) => {
-  console.warn(`Error processing transaction ${id}. Please try again later.`);
-};
-
-makeTransaction({ id: 70, amount: 150 }).then(logSuccess).catch(logError);
-
-makeTransaction({ id: 71, amount: 230 }).then(logSuccess).catch(logError);
-
-makeTransaction({ id: 72, amount: 75 }).then(logSuccess).catch(logError);
-
-makeTransaction({ id: 73, amount: 100 }).then(logSuccess).catch(logError);
+refs.btncreatePromise.addEventListener("submit", makeTransaction);
